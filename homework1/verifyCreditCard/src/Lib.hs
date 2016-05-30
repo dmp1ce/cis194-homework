@@ -2,7 +2,10 @@
 module Lib
     (
       ourAdd
-    , doubleEverySecondDigitFromRight
+    , doubleEveryOther
+    , toDigits
+    , sumDigits
+    , validate
     ) where
 
 import Numeric.Natural
@@ -14,8 +17,22 @@ ourAdd :: Int  -- ^ left
 ourAdd x y = x + y
 
 -- Double every second digit beginning from the right
-doubleEverySecondDigitFromRight :: [Natural] -> [Natural]
-doubleEverySecondDigitFromRight (x:y:xs)
-  | even $ length xs  = x*2:y:doubleEverySecondDigitFromRight xs
-  | otherwise         = x:y*2:doubleEverySecondDigitFromRight xs
-doubleEverySecondDigitFromRight x     = x
+doubleEveryOther :: [Natural] -> [Natural]
+doubleEveryOther (x:y:xs)
+  | even $ length xs  = x*2:y:doubleEveryOther xs
+  | otherwise         = x:y*2:doubleEveryOther xs
+doubleEveryOther x     = x
+
+toDigits :: Integer -> [Integer]
+toDigits x
+  | x <= 0    = []
+  | otherwise = toDigits (x `div` 10) ++ [(x `mod` 10)]
+
+sumDigits :: [Integer] -> Integer
+sumDigits []      = 0
+sumDigits (x:xs)
+  | x < 10        = x + (sumDigits xs)
+  | otherwise     = (sumDigits $ toDigits x) + (sumDigits xs)
+
+validate :: Integer -> Bool
+validate x = False
