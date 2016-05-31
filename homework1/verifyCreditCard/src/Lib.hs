@@ -8,8 +8,6 @@ module Lib
     , validate
     ) where
 
-import Numeric.Natural
-
 -- | Add two 'Int' values.
 ourAdd :: Int  -- ^ left
        -> Int  -- ^ right
@@ -17,7 +15,7 @@ ourAdd :: Int  -- ^ left
 ourAdd x y = x + y
 
 -- Double every second digit beginning from the right
-doubleEveryOther :: [Natural] -> [Natural]
+doubleEveryOther :: [Integer] -> [Integer]
 doubleEveryOther (x:y:xs)
   | even $ length xs  = x*2:y:doubleEveryOther xs
   | otherwise         = x:y*2:doubleEveryOther xs
@@ -35,4 +33,6 @@ sumDigits (x:xs)
   | otherwise     = (sumDigits $ toDigits x) + (sumDigits xs)
 
 validate :: Integer -> Bool
-validate x = False
+validate a =
+  ((sumDigits $ doubleEveryOther $ toDigits a)
+  `mod` 10) == 0
