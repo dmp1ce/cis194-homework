@@ -36,6 +36,7 @@ test-suite spec
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
+  other-modules:      LogSpec
   build-depends:       base
                      , log-file-parsing
                      , hspec

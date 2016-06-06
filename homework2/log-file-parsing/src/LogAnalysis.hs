@@ -1,17 +1,57 @@
 -- | A library to do stuff.
 module LogAnalysis
     (
-      ourAdd
-    , parseMessage
+      parseMessage
+    , parseErrorWords
+    , isStringDigit
+    , isCharDigit
     ) where
 
 import Log
 
--- | Add two 'Int' values.
-ourAdd :: Int  -- ^ left
-       -> Int  -- ^ right
-       -> Int  -- ^ sum
-ourAdd x y = x + y
-
 parseMessage :: String -> LogMessage
-parseMessage s = Unknown s
+parseMessage s
+  | letterCode == "E" = parseErrorWords $ tail msg_words
+  | otherwise         = Unknown s
+  where
+    msg_words   = words s
+    letterCode  = head msg_words
+
+parseErrorWords :: [String] -> LogMessage
+parseErrorWords w
+  | isStringDigit (head w) == False ||
+    isStringDigit (w !! 1) == False = Unknown ("E " ++ unwords w)
+  | otherwise = LogMessage (Error errorCode) timestamp ((unwords . drop 2) w)
+  where
+    errorCode = (read . head) w
+    timestamp = read $ w !! 1
+
+
+-- Functions to determine if read can get integers from string
+isStringDigit :: [Char] -> Bool
+isStringDigit []              = False
+isStringDigit (x:[])          = isCharDigit x
+isStringDigit (x:xs)
+  | t == False  = False
+  | t == True   = isStringDigit xs
+    where
+      t = isCharDigit x
+isStringDigit _               = False
+
+isCharDigit :: Char -> Bool
+isCharDigit '1' = True
+isCharDigit '2' = True
+isCharDigit '3' = True
+isCharDigit '4' = True
+isCharDigit '5' = True
+isCharDigit '6' = True
+isCharDigit '7' = True
+isCharDigit '8' = True
+isCharDigit '9' = True
+isCharDigit '0' = True
+isCharDigit _   = False
+
+-- Test matching strings
+--testParseString :: String -> String
+--testParseString ('E':xs) = xs
+--testParseString _ = "Nothing matched"
