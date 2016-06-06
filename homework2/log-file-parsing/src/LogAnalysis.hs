@@ -12,6 +12,7 @@ import Log
 parseMessage :: String -> LogMessage
 parseMessage s
   | letterCode == "E" = parseErrorWords $ tail msg_words
+  | letterCode == "I" || letterCode == "W" = parseWords $ msg_words
   | otherwise         = Unknown s
   where
     msg_words   = words s
@@ -26,6 +27,15 @@ parseErrorWords w
     errorCode = (read . head) w
     timestamp = read $ w !! 1
 
+parseWords :: [String] -> LogMessage
+parseWords w
+  | isStringDigit (w !! 1) == False = Unknown (unwords w)
+  | letterCode == 'I' = LogMessage Info timestamp ((unwords . drop 2) w)
+  | letterCode == 'W' = LogMessage Warning timestamp ((unwords . drop 2) w)
+  | otherwise = Unknown (unwords w)
+  where
+    letterCode = (head . head) w
+    timestamp = read (w !! 1)
 
 -- Functions to determine if read can get integers from string
 isStringDigit :: [Char] -> Bool
