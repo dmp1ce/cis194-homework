@@ -1,0 +1,4 @@
+#!/bin/bash
+
+wget -nc http://www.seas.upenn.edu/~cis194/spring13/extras/02-ADTs/sample.log
+wget -nc http://www.seas.upenn.edu/~cis194/spring13/extras/02-ADTs/error.log
