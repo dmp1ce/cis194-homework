@@ -5,9 +5,37 @@ module LogAnalysis
     , parseErrorWords
     , isStringDigit
     , isCharDigit
+    , parse
+    , buildTree
+    , isLogBefore
+    , insert
     ) where
 
 import Log
+
+-- Insert
+insert :: LogMessage -> MessageTree -> MessageTree
+insert msg tree = tree
+
+-- Build the message tree
+buildTree :: [LogMessage] -> MessageTree
+buildTree []     = Leaf
+buildTree ((LogMessage msgType timestamp msg):xs)  =
+  Node
+    (buildTree (filter (isLogBefore timestamp) xs)) -- Left branc
+    (LogMessage msgType timestamp msg)
+    (buildTree (filter (not . isLogBefore timestamp) xs))  -- Right branch
+buildTree (Unknown _:xs)  = buildTree xs
+
+isLogBefore :: TimeStamp -> LogMessage -> Bool
+isLogBefore compare_time (LogMessage _ msg_time _)
+  | compare_time > msg_time = True
+  | otherwise               = False
+isLogBefore _ _             = False
+
+parse :: String -> [LogMessage]
+parse []  = []
+parse l   = map parseMessage $ lines l
 
 parseMessage :: String -> LogMessage
 parseMessage s

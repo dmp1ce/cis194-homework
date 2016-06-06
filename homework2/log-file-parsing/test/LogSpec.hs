@@ -10,6 +10,9 @@ import LogAnalysis  (
                     , parseErrorWords
                     , isCharDigit
                     , isStringDigit
+                    , isLogBefore
+                    , buildTree
+                    , insert
                     )
 
 main :: IO ()
@@ -18,10 +21,24 @@ main = hspec spec
 spec :: Spec
 spec =
   describe "Log Analysis" $ do
-    --it "works" $ do
-    --  True `shouldBe` True
-    --prop "ourAdd is commutative" $ \x y ->
-    --  ourAdd x y `shouldBe` ourAdd y x
+    describe "Build message tree functions" $ do
+      it "isLogBefore test 1" $ do
+        isLogBefore 100 (LogMessage Info 99 "hello") `shouldBe` True
+      it "isLogBefore test 2" $ do
+        isLogBefore 1 (LogMessage Warning 99 "hello") `shouldBe` False
+
+      -- Define some log messages for testing
+      let log1 = LogMessage (Error 1) 3 "Error here"
+      let log2 = LogMessage Info 2 "Info here"
+      let log3 = LogMessage Warning 4 "Warning here"
+      let tree1 = buildTree [log1,log2,Unknown "uhoh",log3]
+      it "buildTree simple example" $ do
+        tree1 `shouldBe` Node (Node Leaf log2 Leaf) log1 (Node Leaf log3 Leaf)
+      let log4 = LogMessage Info 100 "100 message"
+      it "insert message" $ do
+        insert log4 tree1 `shouldBe`
+          Node (Node Leaf log2 Leaf) log1 (Node Leaf log3 (Node Leaf log4 Leaf))
+
     describe "Main parse functions" $ do
       it "parseMessage example 1 - Error" $ do
         parseMessage "E 2 562 help help" `shouldBe`
