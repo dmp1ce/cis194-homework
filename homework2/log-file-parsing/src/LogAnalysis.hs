@@ -15,7 +15,32 @@ import Log
 
 -- Insert
 insert :: LogMessage -> MessageTree -> MessageTree
-insert msg tree = tree
+insert (Unknown _) tree = tree
+insert logMsg Leaf      = Node Leaf logMsg Leaf
+insert logMsg (Node left nodeLogMsg right)
+  -- Insert logMessage can be inserted between center and right
+  | logMsgTimeStamp >= centerNodeTimeStamp &&
+    logMsgTimeStamp <= rightNodeTimeStamp =
+    Node left nodeLogMsg (Node Leaf logMsg right)
+  -- Insert must go somewhere on the left tree
+  | logMsgTimeStamp > rightNodeTimeStamp  =
+    Node left nodeLogMsg (insert logMsg right)
+  -- Insert must go somewhere on the right tree
+  | logMsgTimeStamp < centerNodeTimeStamp =
+    Node (insert logMsg left) nodeLogMsg right
+  where
+    logMsgTimeStamp     = getLogMessageTimeStamp logMsg
+    centerNodeTimeStamp = getLogMessageTimeStamp nodeLogMsg
+    rightNodeTimeStamp  = getMessageTreeTimeStamp right
+insert _ _              = error "Missing match on insert"
+
+-- Get timestamp functions
+getMessageTreeTimeStamp :: MessageTree -> Maybe TimeStamp
+getMessageTreeTimeStamp (Node _ logMsg _) = getLogMessageTimeStamp logMsg
+getMessageTreeTimeStamp Leaf              = Nothing
+getLogMessageTimeStamp :: LogMessage -> Maybe TimeStamp
+getLogMessageTimeStamp (LogMessage _ timestamp _) = Just timestamp
+getLogMessageTimeStamp (Unknown _)                = Nothing
 
 -- Build the message tree
 buildTree :: [LogMessage] -> MessageTree

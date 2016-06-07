@@ -34,6 +34,8 @@ spec =
       let tree1 = buildTree [log1,log2,Unknown "uhoh",log3]
       it "buildTree simple example" $ do
         tree1 `shouldBe` Node (Node Leaf log2 Leaf) log1 (Node Leaf log3 Leaf)
+
+      -- Define LogMessage to insert
       let log4 = LogMessage Info 100 "100 message"
       it "insert message" $ do
         insert log4 tree1 `shouldBe`
