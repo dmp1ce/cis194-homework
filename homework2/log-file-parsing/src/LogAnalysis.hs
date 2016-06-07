@@ -12,10 +12,32 @@ module LogAnalysis
     , build
     , getMessageTreeTimeStamp
     , getLogMessageTimeStamp
+    , inOrder
+    , whatWentWrong
     ) where
 
 import Log
 
+whatWentWrong :: [LogMessage] -> [String]
+whatWentWrong []      = []
+whatWentWrong x  = map getLogMessageString (filter (isSeverityOf 50) ((inOrder . build) x))
+
+getLogMessageString :: LogMessage -> String
+getLogMessageString (LogMessage _ _ s)  = s
+getLogMessageString (Unknown s)         = s
+
+-- Return true of the LogMessage of greater than specified severity
+isSeverityOf :: Int -> LogMessage -> Bool
+isSeverityOf threshold (LogMessage (Error severity) _ _)
+  | severity >= threshold = True
+  | otherwise             = False
+isSeverityOf _ _  = False
+
+inOrder :: MessageTree -> [LogMessage]
+inOrder Leaf                      = []
+inOrder (Node left logMsg right)  = (inOrder left) ++ [logMsg] ++ (inOrder right)
+
+-- Exercise 3 solution
 build :: [LogMessage] -> MessageTree
 build []      = Leaf
 build (x:xs)  = insert x (build xs)

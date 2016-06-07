@@ -16,6 +16,8 @@ import LogAnalysis  (
                     , build
                     , getMessageTreeTimeStamp
                     , getLogMessageTimeStamp
+                    , inOrder
+                    , whatWentWrong
                     )
 
 main :: IO ()
@@ -24,6 +26,23 @@ main = hspec spec
 spec :: Spec
 spec =
   describe "Log Analysis" $ do
+    describe "whatWentWrong function" $ do
+      let log1 = LogMessage (Error 1) 3 "Error here"
+      let log2 = LogMessage (Error 50) 4 "Serious error"
+      let log3 = LogMessage (Error 100) 5 "More serious"
+      let log4 = LogMessage (Error 999) 1 "Crazy times"
+      it "whatWentWrong works" $ do
+        whatWentWrong [log1, log2, log3, log4] `shouldBe`
+          ["Crazy times", "Serious error", "More serious"]
+
+    describe "inOrder function" $ do
+      let log1 = LogMessage (Error 1) 3 "Error here"
+      let log2 = LogMessage Info 2 "Info here"
+      let log3 = LogMessage Warning 4 "Warning here"
+      let tree = build [log1,log2,log3]
+      it "inOrder works" $ do
+        inOrder tree `shouldBe` [log2, log1, log3]
+
     describe "Build message tree functions" $ do
       it "isLogBefore test 1" $ do
         isLogBefore 100 (LogMessage Info 99 "hello") `shouldBe` True
@@ -46,7 +65,8 @@ spec =
       it "insert into Leaf" $ do
         insert log1 Leaf `shouldBe` Node Leaf log1 Leaf
       it "insert into log1 node" $ do
-        insert log2 (insert log1 Leaf) `shouldBe` Node (Node Leaf log2 Leaf) log1 Leaf
+        insert log2 (insert log1 Leaf) `shouldBe`
+          Node (Node Leaf log2 Leaf) log1 Leaf
 
       -- Test the build function the same as buildTree
       let tree2 = build [log1,log2,Unknown "uhoh",log3]
