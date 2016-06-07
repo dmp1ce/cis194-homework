@@ -13,6 +13,9 @@ import LogAnalysis  (
                     , isLogBefore
                     , buildTree
                     , insert
+                    , build
+                    , getMessageTreeTimeStamp
+                    , getLogMessageTimeStamp
                     )
 
 main :: IO ()
@@ -40,6 +43,32 @@ spec =
       it "insert message" $ do
         insert log4 tree1 `shouldBe`
           Node (Node Leaf log2 Leaf) log1 (Node Leaf log3 (Node Leaf log4 Leaf))
+      it "insert into Leaf" $ do
+        insert log1 Leaf `shouldBe` Node Leaf log1 Leaf
+      it "insert into log1 node" $ do
+        insert log2 (insert log1 Leaf) `shouldBe` Node (Node Leaf log2 Leaf) log1 Leaf
+
+      -- Test the build function the same as buildTree
+      let tree2 = build [log1,log2,Unknown "uhoh",log3]
+      it "build simple example" $ do
+        tree2 `shouldBe` Node (Node Leaf log2 (Node Leaf log1 Leaf)) log3 Leaf
+      let tree3 = build [log1,log2,Unknown "uhoh"]
+      it "build simple example - two nodes" $ do
+        tree3 `shouldBe` Node Leaf log2 (Node Leaf log1 Leaf)
+      let tree4 = build [log1,Unknown "uhoh"]
+      it "build simple example - one node" $ do
+        tree4 `shouldBe` Node Leaf log1 Leaf
+      let tree5 = build [log2,log1,Unknown "uhoh"]
+      it "build simple example - two nodes again" $ do
+        tree5 `shouldBe` Node (Node Leaf log2 Leaf) log1 Leaf
+
+    describe "Get TimeStamp functions" $ do
+      let logMsg1 = LogMessage Info 123 "hello"
+      let tree1 = Node Leaf logMsg1 Leaf
+      it "getMessageTreeTimeStamp simple example" $ do
+        getMessageTreeTimeStamp tree1 `shouldBe` Just 123
+      it "getLogMessageTimeStamp simple example" $ do
+        getLogMessageTimeStamp logMsg1 `shouldBe` Just 123
 
     describe "Main parse functions" $ do
       it "parseMessage example 1 - Error" $ do

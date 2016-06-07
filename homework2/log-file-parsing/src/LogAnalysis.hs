@@ -9,28 +9,37 @@ module LogAnalysis
     , buildTree
     , isLogBefore
     , insert
+    , build
+    , getMessageTreeTimeStamp
+    , getLogMessageTimeStamp
     ) where
 
 import Log
+
+build :: [LogMessage] -> MessageTree
+build []      = Leaf
+build (x:xs)  = insert x (build xs)
 
 -- Insert
 insert :: LogMessage -> MessageTree -> MessageTree
 insert (Unknown _) tree = tree
 insert logMsg Leaf      = Node Leaf logMsg Leaf
 insert logMsg (Node left nodeLogMsg right)
-  -- Insert logMessage can be inserted between center and right
-  | logMsgTimeStamp >= centerNodeTimeStamp &&
-    logMsgTimeStamp <= rightNodeTimeStamp =
+  -- Insert logMessage can be inserted between current and right
+  | logMsgTimeStamp >= nodeTimeStamp &&
+    (logMsgTimeStamp <= rightNodeTimeStamp ||
+    right == Leaf) =
     Node left nodeLogMsg (Node Leaf logMsg right)
-  -- Insert must go somewhere on the left tree
-  | logMsgTimeStamp > rightNodeTimeStamp  =
-    Node left nodeLogMsg (insert logMsg right)
   -- Insert must go somewhere on the right tree
-  | logMsgTimeStamp < centerNodeTimeStamp =
+  | right /= Leaf &&
+    logMsgTimeStamp > rightNodeTimeStamp  =
+    Node left nodeLogMsg (insert logMsg right)
+  -- Insert must go somewhere on the left tree
+  | logMsgTimeStamp < nodeTimeStamp =
     Node (insert logMsg left) nodeLogMsg right
   where
     logMsgTimeStamp     = getLogMessageTimeStamp logMsg
-    centerNodeTimeStamp = getLogMessageTimeStamp nodeLogMsg
+    nodeTimeStamp       = getLogMessageTimeStamp nodeLogMsg
     rightNodeTimeStamp  = getMessageTreeTimeStamp right
 insert _ _              = error "Missing match on insert"
 
@@ -43,6 +52,8 @@ getLogMessageTimeStamp (LogMessage _ timestamp _) = Just timestamp
 getLogMessageTimeStamp (Unknown _)                = Nothing
 
 -- Build the message tree
+-- I did this function before I read the entire homework.
+-- See the `build` function for the Excersie 3 solution.
 buildTree :: [LogMessage] -> MessageTree
 buildTree []     = Leaf
 buildTree ((LogMessage msgType timestamp msg):xs)  =
