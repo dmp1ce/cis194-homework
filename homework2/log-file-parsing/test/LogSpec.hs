@@ -18,6 +18,7 @@ import LogAnalysis  (
                     , getLogMessageTimeStamp
                     , inOrder
                     , whatWentWrong
+                    , isInMessage
                     )
 
 main :: IO ()
@@ -26,7 +27,7 @@ main = hspec spec
 spec :: Spec
 spec =
   describe "Log Analysis" $ do
-    describe "whatWentWrong function" $ do
+    describe "whatWentWrong functions" $ do
       let log1 = LogMessage (Error 1) 3 "Error here"
       let log2 = LogMessage (Error 50) 4 "Serious error"
       let log3 = LogMessage (Error 100) 5 "More serious"
@@ -34,6 +35,9 @@ spec =
       it "whatWentWrong works" $ do
         whatWentWrong [log1, log2, log3, log4] `shouldBe`
           ["Crazy times", "Serious error", "More serious"]
+      it "isInMessage works" $ do
+        isInMessage ["hello"] (LogMessage Info 100 "fefe hello@eee") `shouldBe`
+          True
 
     describe "inOrder function" $ do
       let log1 = LogMessage (Error 1) 3 "Error here"

@@ -14,9 +14,36 @@ module LogAnalysis
     , getLogMessageTimeStamp
     , inOrder
     , whatWentWrong
+    , whatWentWrongAllErrors
+    , isInMessage
+    , whatWentWrongFilterString
     ) where
 
 import Log
+import Data.List (isInfixOf)
+
+-- I tried to filter the messages with this string filter but all I could see
+-- was a bunch of Alice in Wonderland passages.
+customFilter :: [String]
+customFilter = ["000","BIOS","ACPI","0x","pci","64bit","OEM","TL 23","MEM",
+  "scsizing","nullizer","1ff","wlats","#5987","ACPU","wlan","MSI","#27",
+  "PME#","WDC00","sdhcd","irq","APIC","cfff","DMA","RAM","#10","ffff"]
+
+whatWentWrongFilterString :: [LogMessage] -> [String]
+whatWentWrongFilterString []      = []
+whatWentWrongFilterString x  = map getLogMessageString (
+    filter isWarning (
+      filter ((not . isInMessage customFilter)) ((inOrder . build) x)
+    )
+  )
+
+whatWentWrongAllErrors :: [LogMessage] -> [String]
+whatWentWrongAllErrors []      = []
+whatWentWrongAllErrors x  = map getLogMessageString (filter (isSeverityOf 0) ((inOrder . build) x))
+
+--whatWentWrongAllInfo :: [LogMessage] -> [String]
+--whatWentWrongAllInfo []      = []
+--whatWentWrongAllInfo x  = map getLogMessageString ((inOrder . build) x)
 
 whatWentWrong :: [LogMessage] -> [String]
 whatWentWrong []      = []
@@ -26,12 +53,26 @@ getLogMessageString :: LogMessage -> String
 getLogMessageString (LogMessage _ _ s)  = s
 getLogMessageString (Unknown s)         = s
 
+isWarning :: LogMessage -> Bool
+isWarning (LogMessage Warning _ _) = True
+isWarning _ = False
+
 -- Return true of the LogMessage of greater than specified severity
 isSeverityOf :: Int -> LogMessage -> Bool
 isSeverityOf threshold (LogMessage (Error severity) _ _)
   | severity >= threshold = True
   | otherwise             = False
 isSeverityOf _ _  = False
+
+-- Return True if the one of the list of words is in message
+isInMessage :: [String] -> LogMessage -> Bool
+isInMessage [] _          = False
+isInMessage (x:xs) (LogMessage logType time msg)
+  | x `isInfixOf` msg     = True
+  | otherwise             = isInMessage xs (LogMessage logType time msg)
+isInMessage (x:xs) (Unknown msg)
+  | x `isInfixOf` msg     = True
+  | otherwise             = isInMessage xs (Unknown msg)
 
 inOrder :: MessageTree -> [LogMessage]
 inOrder Leaf                      = []
