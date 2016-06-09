@@ -1,6 +1,7 @@
 module Golf
   (
     skips
+  , localMaxima
   ) where
 
 -- I realized that splitAt in Prelude was close to what I needed so
@@ -21,3 +22,11 @@ skips x   = map (skipAt x) [0..((length x) -1)]
           | length ys > n   = [y] ++ (skipAt' n ys)
           | length ys <= n  = [y]
         skipAt' m (_:ys)    = skipAt' (m-1) ys
+
+-- The function has to look at at least 3 integers. If the 3 integers
+-- are not available then just return an empty list.
+localMaxima :: [Integer] -> [Integer]
+localMaxima (x:y:z:ss)
+  | x < y && z < y  = [y] ++ localMaxima (y:z:ss)
+  | otherwise       = localMaxima (y:z:ss)
+localMaxima _       = []
