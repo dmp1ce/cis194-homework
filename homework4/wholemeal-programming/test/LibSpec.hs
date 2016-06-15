@@ -21,7 +21,7 @@ spec =
     describe "Exercise 1" $ do
       prop "fun1 is the same as fun1'" $ \xs ->
         fun1 xs `shouldBe` fun1' xs
-      prop "fun2 is the same as fun2'" $ forAll (choose (0,1000)) $ \x ->
+      prop "fun2 is the same as fun2'" $ forAll (choose (1,1000)) $ \x ->
         fun2 x `shouldBe` fun2' x
       it "works" $ do
         fun2 1230 `shouldBe` fun2' 1230

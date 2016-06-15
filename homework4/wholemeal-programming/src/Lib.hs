@@ -38,7 +38,3 @@ fun2 n
 fun2' :: Integer -> Integer
 fun2' = sum . filter even . takeWhile (>1)
   . iterate (\x -> if even x then x `div` 2 else  x * 3 + 1)
--- sum . takeWhile (notNull) iterate (\x ->
---  if even x
---    then x `div` 2
---    else 3 * x + 1)
