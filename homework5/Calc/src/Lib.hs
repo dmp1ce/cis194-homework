@@ -3,10 +3,10 @@ module Lib
     (
       eval
     , evalStr
+    , Expr (mul,add,lit)
     ) where
 
 import ExprT
-import Data.Maybe (isNothing)
 import Parser (parseExp)
 
 --data ExprT = Lit Integer
@@ -27,3 +27,17 @@ evalStr s = evalMaybe $ parseExp Lit Add Mul s
     evalMaybe :: Maybe ExprT -> Maybe Integer
     evalMaybe (Just e)  = Just (eval e)
     evalMaybe Nothing   = Nothing
+
+-- Exercise 3
+class Expr a where
+  mul,add :: a -> a -> a
+  lit     :: Integer -> a
+
+-- Looked up some help here:
+-- https://github.com/BerndSchwarzenbacher/cis194-solutions/blob/master/05-typeclasses/Calc.hs
+instance Expr ExprT where
+  mul = Mul
+  add = Add
+  lit = Lit
+
+-- Exercise 4
