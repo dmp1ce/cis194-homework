@@ -20,6 +20,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Lib
                      , ExprT
+                     , Parser
   build-depends:       base >= 4.7 && < 5
 
 executable Calc
