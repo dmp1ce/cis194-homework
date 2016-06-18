@@ -21,6 +21,7 @@ library
   exposed-modules:     Lib
                      , ExprT
                      , Parser
+                     , StackVM
   build-depends:       base >= 4.7 && < 5
 
 executable Calc

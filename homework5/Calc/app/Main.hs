@@ -1,6 +1,6 @@
 module Main where
 
-import Lib (eval)
+--import Lib (eval)
 
 import Text.Printf (printf)
 
