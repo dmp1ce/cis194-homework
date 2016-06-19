@@ -17,6 +17,8 @@ module Lib
     , ruler 
     , x
     , fibs3
+    , Matrix (Matrix)
+    , fib4
     ) where
 
 fib :: Integer -> Integer
@@ -98,3 +100,23 @@ instance Fractional (Stream Integer) where
 
 fibs3 :: Stream Integer
 fibs3 = x / ((1::Stream Integer) - x - x^(2::Integer)) 
+
+-- Exercise 7
+--                    C 1     C 2
+data Matrix = Matrix  Integer Integer -- Row 1
+                      Integer Integer -- Row 2
+  deriving (Show, Eq)
+
+instance Num Matrix where
+  (*) (Matrix a11 a12 a21 a22) (Matrix b11 b12 b21 b22) =
+    Matrix  (a11*b11 + a12*b21) (a11*b12 + a12*b22)
+            (a21*b11 + a22*b21) (a12*b21 + a22*b22)
+
+--instance Integral Matrix where
+--    toInteger (Matrix a11 _ _ _)  = a11
+
+fib4 :: Integer -> Integer
+fib4 0  = 0
+fib4 1  = 1
+fib4 x' = toInteger' $ (Matrix 1 1 1 0)^(x'-1) where
+  toInteger' (Matrix a11 _ _ _) = a11
