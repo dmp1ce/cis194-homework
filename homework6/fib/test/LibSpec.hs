@@ -9,6 +9,9 @@ import Lib  ( fib
             , streamRepeat
             , interleaveStreams
             , ruler
+            , x
+            , fibs2
+            , fibs3
             )
 
 main :: IO ()
@@ -35,3 +38,8 @@ spec =
         --pending
         take 16 (streamToList ruler) `shouldBe`
           [0,1,0,2,0,1,0,3,0,1,0,2,0,1,0,4]
+    context "Fib stream" $ do
+      it "x" $ do
+        take 5 (streamToList x) `shouldBe` [0,1,0,0,0]
+      it "fibs2 == fibs3" $ do
+        take 20 fibs2 `shouldBe` take 20 (streamToList fibs3)

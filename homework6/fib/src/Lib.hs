@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-missing-methods #-}
+
 -- | A library to do stuff.
 module Lib
     (
@@ -12,6 +15,8 @@ module Lib
     , nats
     , interleaveStreams
     , ruler 
+    , x
+    , fibs3
     ) where
 
 fib :: Integer -> Integer
@@ -33,7 +38,7 @@ fibs2 = fibgen 0 1 where
 -- Used reference here: https://github.com/evansb/cis194-hw/blob/master/spring_2013/hw6/Fibonacci.hs
 -- Exercise 3
 streamToList :: Stream a -> [a]
-streamToList (Cons x rest) = x:(streamToList rest)
+streamToList (Cons y rest) = y:(streamToList rest)
 
 data Stream a = Cons a (Stream a)
 instance Show a => Show (Stream a) where
@@ -44,10 +49,10 @@ instance Show a => Show (Stream a) where
 
 -- Exercise 4
 streamRepeat :: a -> Stream a
-streamRepeat x = Cons x (streamRepeat x)
+streamRepeat y = Cons y (streamRepeat y)
 
 streamMap :: (a -> b) -> Stream a -> Stream b
-streamMap f (Cons x rest) = Cons (f x) (streamMap f rest)
+streamMap f (Cons y rest) = Cons (f y) (streamMap f rest)
 
 streamFromSeed :: (a -> a) -> a -> Stream a
 streamFromSeed f seed = Cons (seed) (streamFromSeed f (f seed))
@@ -57,8 +62,8 @@ nats :: Stream Integer
 nats = streamFromSeed (+1) 0
 
 interleaveStreams :: Stream a -> Stream a -> Stream a
-interleaveStreams (Cons x xs) (Cons y ys) =
-  Cons x (Cons y (interleaveStreams xs ys))
+interleaveStreams (Cons x' xs) (Cons y ys) =
+  Cons x' (Cons y (interleaveStreams xs ys))
 
 -- I was close but I needed a little help from this solution:
 -- https://github.com/gfixler/cis194/blob/master/hw06/Fibonacci.hs
@@ -67,4 +72,29 @@ interleaveStreams (Cons x xs) (Cons y ys) =
 ruler :: Stream Integer
 ruler = genRuler 0 where
   genRuler :: Integer -> Stream Integer
-  genRuler x = Cons x $ interleaveStreams (genRuler (x+1)) (streamRepeat x)
+  genRuler y = Cons y $ interleaveStreams (genRuler (y+1)) (streamRepeat y)
+
+-- Exercise 6
+x :: Stream Integer
+x = Cons 0 (Cons 1 (streamRepeat 0))
+
+instance Num (Stream Integer) where
+  fromInteger i     = Cons i (streamRepeat 0)
+  negate (Cons i r) = Cons (negate i) (negate r)
+  (+) (Cons i0 r0) (Cons i1 r1) = Cons (i0+i1) (r0 + r1)
+  -- a0b0 + x(a0B' + A'B)
+  (*) (Cons i0 r0) (Cons i1 r1) = Cons (i0*i1)
+    (streamMap (*i0) r1 + r0 * (Cons i1 r1))
+
+
+instance Fractional (Stream Integer) where
+  -- Q = A/B
+  -- Q = a0/b0 + x((1/b0) + ((1/b0)(A' - QB'))
+  (/) (Cons i0 r0) (Cons i1 r1) =
+    Cons (i0 `div` i1)              -- a0/b0 +
+      $ streamMap (*(1 `div` i1))   -- x((1/b0)
+        (r0                         -- + (A'
+        - (Cons i0 r0) * r1 / (Cons i1 r1)) -- - QB'))
+
+fibs3 :: Stream Integer
+fibs3 = x / ((1::Stream Integer) - x - x^(2::Integer)) 
