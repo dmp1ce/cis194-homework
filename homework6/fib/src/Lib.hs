@@ -7,6 +7,11 @@ module Lib
     , Stream (Cons)
     , streamToList
     , streamRepeat
+    , streamMap
+    , streamFromSeed
+    , nats
+    , interleaveStreams
+    , ruler 
     ) where
 
 fib :: Integer -> Integer
@@ -40,3 +45,26 @@ instance Show a => Show (Stream a) where
 -- Exercise 4
 streamRepeat :: a -> Stream a
 streamRepeat x = Cons x (streamRepeat x)
+
+streamMap :: (a -> b) -> Stream a -> Stream b
+streamMap f (Cons x rest) = Cons (f x) (streamMap f rest)
+
+streamFromSeed :: (a -> a) -> a -> Stream a
+streamFromSeed f seed = Cons (seed) (streamFromSeed f (f seed))
+
+-- Exercise 5
+nats :: Stream Integer
+nats = streamFromSeed (+1) 0
+
+interleaveStreams :: Stream a -> Stream a -> Stream a
+interleaveStreams (Cons x xs) (Cons y ys) =
+  Cons x (Cons y (interleaveStreams xs ys))
+
+-- I was close but I needed a little help from this solution:
+-- https://github.com/gfixler/cis194/blob/master/hw06/Fibonacci.hs
+-- I needed to have "Cons x" to start the stream to prevent recurive loop in
+-- looking for the beginning of the stream.
+ruler :: Stream Integer
+ruler = genRuler 0 where
+  genRuler :: Integer -> Stream Integer
+  genRuler x = Cons x $ interleaveStreams (genRuler (x+1)) (streamRepeat x)
