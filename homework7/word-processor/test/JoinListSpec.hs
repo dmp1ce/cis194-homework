@@ -7,6 +7,9 @@ import Data.Monoid
 import JoinList (
                   (+++)
                 , JoinList (Empty, Single, Append)
+                , (!!?)
+                , jlToList
+                , indexJ
                 )
 
 main :: IO ()
@@ -25,6 +28,12 @@ spec =
       a +++ Empty `shouldBe` a
     it "+++ JoinList Append" $ do
       ae +++ a `shouldBe` aea
+    context "indexJ works" $ do
+      let jl  = Empty
+      let i   = 0
+      it "indexJ == jlToList" $ do
+        indexJ 0 Empty `shouldBe` Nothing --(jlToList jl !!? i)
+
 --    it "works" $ do
 --      True `shouldBe` True
 --    prop "ourAdd is commutative" $ \x y ->
