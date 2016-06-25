@@ -21,6 +21,7 @@ library
   exposed-modules:      JoinList
                       , Sized
   build-depends:       base >= 4.7 && < 5
+                      , QuickCheck
 
 executable word-processor
   default-language:    Haskell2010

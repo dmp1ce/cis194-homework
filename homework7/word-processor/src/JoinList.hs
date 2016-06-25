@@ -6,10 +6,15 @@ module JoinList
     , (!!?)
     , jlToList
     , indexJ
+    , dropJ
+--    , tag
     ) where
+-- For testing JoinList arbitrary
+import Test.QuickCheck.Arbitrary
+import Test.QuickCheck.Gen
+
 import Sized
 --import Data.Maybe (isNothing)
-
 
 -- Exercise 1
 data JoinList m a = Empty
@@ -28,6 +33,16 @@ tag (Append m _ _)  = m
 (+++) jl1 jl2   = Append (mappend (tag jl1) (tag jl2)) jl1 jl2
 
 -- Exercise 2
+-- For testing with QuckCheck on JoinList data types
+instance (Arbitrary a, Arbitrary b) => Arbitrary (JoinList a b) where
+  arbitrary = do
+    x <- arbitrary
+    s <- arbitrary
+    jl0 <- arbitrary
+    jl1 <- arbitrary
+    result <- elements [(Single s x), (Append s jl0 jl1), Empty]
+    return $ result
+
 (!!?) :: [a] -> Int -> Maybe a
 [] !!? _ = Nothing
 _ !!? i | i < 0 = Nothing
@@ -42,12 +57,30 @@ jlToList (Append _ l1 l2) = jlToList l1 ++ jlToList l2
 indexJ :: (Sized b, Monoid b) => Int -> JoinList b a -> Maybe a
 indexJ 0 (Single _ a) = Just a
 indexJ index (Append _ jl0 jl1)
-  | index - (joinListSize jl0) >= 0 = indexJ (index - (joinListSize jl0)) jl0
-  | index - (joinListSize jl1) >= 0 = indexJ (index - (joinListSize jl1)) jl1
-  | otherwise                       = Nothing
+  | jl0_size > 0 && jl0_size >= (index+1)
+              = indexJ index jl0
+  | jl1_size > 0 && jl1_size >= (index+1) - jl0_size
+              = indexJ (index - jl0_size) jl1
+  | otherwise = Nothing
+  where
+    jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
+    jlSize = getSize . size . tag
+    jl0_size = jlSize jl0
+    jl1_size = jlSize jl1
 indexJ _ _ = Nothing
 
-joinListSize :: (Sized b, Monoid b) => JoinList b a -> Int
-joinListSize (Single m _)   = getSize $ size m
-joinListSize (Append m _ _) = getSize $ size m
-joinListSize _              = 0
+dropJ :: (Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
+dropJ n (Append m jll jlr)
+  | n >= jl_size            = Empty
+  | n == jll_size           = jlr
+  | n > jll_size            = dropJ (n-jll_size) jlr
+  | n < jll_size            = dropJ n jll +++ jlr
+  | otherwise               = (Append m jll jlr)
+  where
+    jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
+    jlSize = getSize . size . tag
+    jll_size  = jlSize jll
+    jl_size   = (getSize $ size m)
+dropJ n jl
+  | n >= (getSize $ size $ tag jl)  = Empty
+  | otherwise                       = jl

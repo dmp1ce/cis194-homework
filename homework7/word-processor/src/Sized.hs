@@ -1,5 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, FlexibleInstances #-}
 module Sized where
+import Test.QuickCheck.Arbitrary
 
 --import Data.Monoid
 
@@ -26,3 +27,9 @@ instance Sized b => Sized (a,b) where
 instance Monoid Size where
   mempty  = Size 0
   mappend = (+)
+
+-- QuickCheck arbitrary
+instance Arbitrary Size where
+  arbitrary = do
+    x <- arbitrary
+    return $ Size x
