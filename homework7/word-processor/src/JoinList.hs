@@ -1,3 +1,4 @@
+{-#LANGUAGE FlexibleInstances #-}
 -- | A library to do stuff.
 module JoinList
     (
@@ -7,6 +8,7 @@ module JoinList
     , jlToList
     , indexJ
     , dropJ
+    , ValidJoinList (ValidJoinList)
 --    , tag
     ) where
 -- For testing JoinList arbitrary
@@ -53,6 +55,37 @@ jlToList :: JoinList m a -> [a]
 jlToList Empty = []
 jlToList (Single _ a) = [a]
 jlToList (Append _ l1 l2) = jlToList l1 ++ jlToList l2
+
+-- Create QuickCheck modifier for valid JoinList
+newtype ValidJoinList m a = ValidJoinList (JoinList m a)
+  deriving ( Eq, Show )
+instance (Arbitrary a) => Arbitrary (ValidJoinList Size a) where
+  arbitrary = ValidJoinList <$> do
+    x <- arbitrary
+    ValidJoinList jl0 <- arbitrary
+    ValidJoinList jl1 <- arbitrary
+    result <- elements
+                  [
+                    (Single (Size 1) x)
+                  , (Append (addJoinListSizes jl0 jl1) jl0 jl1)
+                  , Empty
+                  ]
+    return $ result
+
+addJoinListSizes :: JoinList Size a -> JoinList Size a -> Size
+addJoinListSizes jl0 jl1 = Size (jlSize jl0 + jlSize jl1)
+  where
+    jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
+    jlSize = getSize . size . tag
+
+isValidJoinList :: (Sized s, Monoid s) => JoinList s a -> Bool
+isValidJoinList jl
+    | jl_size > 0 = True
+    | otherwise   = False
+    where
+      jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
+      jlSize = getSize . size . tag
+      jl_size = jlSize jl
 
 indexJ :: (Sized b, Monoid b) => Int -> JoinList b a -> Maybe a
 indexJ 0 (Single _ a) = Just a

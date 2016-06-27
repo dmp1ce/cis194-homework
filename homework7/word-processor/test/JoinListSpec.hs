@@ -1,7 +1,7 @@
 module JoinListSpec where
 
 import Test.Hspec
---import Test.Hspec.QuickCheck
+import Test.Hspec.QuickCheck
 import Data.Monoid
 
 import Sized
@@ -12,6 +12,7 @@ import JoinList (
                 , jlToList
                 , indexJ
                 , dropJ
+                , ValidJoinList (ValidJoinList)
                 )
 
 main :: IO ()
@@ -48,9 +49,8 @@ spec =
       it "indexJ == jlToList - Ignores Empty" $ do
         let jl' = Append (Size 1) Empty (Single (Size 1) 'a')
         indexJ 0 jl' `shouldBe` jlToList jl' !!? 0
-      -- Cannot use arbitrary right now because arbitrary produces invalid JoinLists
-      --prop "indexJ == jlToList - QuickCheck" $ \i_ jl_ ->
-      --  indexJ i_ (jl_ :: JoinList Size Char) `shouldBe` (jlToList jl_ !!? i_)
+      prop "indexJ == jlToList - QuickCheck" $ \i_ (ValidJoinList jl_) ->
+        indexJ i_ (jl_ :: JoinList Size Char) `shouldBe` (jlToList jl_ !!? i_)
     context "dropJ" $ do
       it "dropJ == jlToList - Empty" $ do
         let jl  = (Empty :: JoinList Size a)
@@ -58,3 +58,12 @@ spec =
         jlToList ((dropJ n jl) :: JoinList Size Int)
           `shouldBe`
             drop n ((jlToList jl))
+      it "dropJ == jlToList - left greater than n" $ do
+        let jl  = (Append
+                    3
+                    (Append 2 (Single (Size 1) 'a') (Single (Size 1) 'b'))
+                    (Single (Size 1) 'c'))
+        let n   = 1
+        jlToList (dropJ n jl)
+          `shouldBe`
+            drop n (jlToList jl)
