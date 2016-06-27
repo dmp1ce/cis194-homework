@@ -13,6 +13,7 @@ import JoinList (
                 , indexJ
                 , dropJ
                 , ValidJoinList (ValidJoinList)
+                , takeJ
                 )
 
 main :: IO ()
@@ -67,3 +68,8 @@ spec =
         jlToList (dropJ n jl)
           `shouldBe`
             drop n (jlToList jl)
+      prop "dropJ == jlToList - QuickCheck" $ \i_ (ValidJoinList jl_) ->
+        jlToList (dropJ i_ (jl_ :: JoinList Size Char)) == drop i_ (jlToList jl_)
+    context "dropJ" $ do
+      prop "takeJ == jlToList - QuickCheck" $ \i_ (ValidJoinList jl_) ->
+        jlToList (takeJ i_ (jl_ :: JoinList Size Char)) == take i_ (jlToList jl_)

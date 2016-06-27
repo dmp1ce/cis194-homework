@@ -9,6 +9,7 @@ module JoinList
     , indexJ
     , dropJ
     , ValidJoinList (ValidJoinList)
+    , takeJ
 --    , tag
     ) where
 -- For testing JoinList arbitrary
@@ -74,18 +75,17 @@ instance (Arbitrary a) => Arbitrary (ValidJoinList Size a) where
 
 addJoinListSizes :: JoinList Size a -> JoinList Size a -> Size
 addJoinListSizes jl0 jl1 = Size (jlSize jl0 + jlSize jl1)
-  where
-    jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
-    jlSize = getSize . size . tag
 
-isValidJoinList :: (Sized s, Monoid s) => JoinList s a -> Bool
-isValidJoinList jl
-    | jl_size > 0 = True
-    | otherwise   = False
-    where
-      jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
-      jlSize = getSize . size . tag
-      jl_size = jlSize jl
+jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
+jlSize = getSize . size . tag
+--isValidJoinList :: (Sized s, Monoid s) => JoinList s a -> Bool
+--isValidJoinList jl
+--    | jl_size > 0 = True
+--    | otherwise   = False
+--    where
+--      jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
+--      jlSize = getSize . size . tag
+--      jl_size = jlSize jl
 
 indexJ :: (Sized b, Monoid b) => Int -> JoinList b a -> Maybe a
 indexJ 0 (Single _ a) = Just a
@@ -96,8 +96,6 @@ indexJ index (Append _ jl0 jl1)
               = indexJ (index - jl0_size) jl1
   | otherwise = Nothing
   where
-    jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
-    jlSize = getSize . size . tag
     jl0_size = jlSize jl0
     jl1_size = jlSize jl1
 indexJ _ _ = Nothing
@@ -110,10 +108,24 @@ dropJ n (Append m jll jlr)
   | n < jll_size            = dropJ n jll +++ jlr
   | otherwise               = (Append m jll jlr)
   where
-    jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
-    jlSize = getSize . size . tag
     jll_size  = jlSize jll
     jl_size   = (getSize $ size m)
 dropJ n jl
   | n >= (getSize $ size $ tag jl)  = Empty
   | otherwise                       = jl
+
+takeJ :: (Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
+takeJ 0 _ = Empty
+takeJ n (Single m a)
+  | n >= 1    = (Single m a)
+  | otherwise = Empty
+takeJ n (Append m jll jlr)
+  | n >= jl_size  = (Append m jll jlr)
+  | n < jll_size  = takeJ n jll
+  | n == jll_size = jll
+  | n > jll_size  = jll +++ takeJ (n - jll_size) jlr
+  | otherwise     = error "Unexpected case"
+  where
+    jll_size  = jlSize jll
+    jl_size   = (getSize $ size m)
+takeJ _ _ = Empty
