@@ -5,6 +5,7 @@ import Test.Hspec.QuickCheck
 import Data.Monoid
 
 import Sized
+import Scrabble
 import JoinList (
                   (+++)
                 , JoinList (Empty, Single, Append)
@@ -14,6 +15,7 @@ import JoinList (
                 , dropJ
                 , ValidJoinList (ValidJoinList)
                 , takeJ
+                , scoreLine
                 )
 
 main :: IO ()
@@ -73,3 +75,9 @@ spec =
     context "dropJ" $ do
       prop "takeJ == jlToList - QuickCheck" $ \i_ (ValidJoinList jl_) ->
         jlToList (takeJ i_ (jl_ :: JoinList Size Char)) == take i_ (jlToList jl_)
+    context "Scrabble" $ do
+      it "Scrabble example 1" $ do
+        let expected  = Append (Score 23)
+                        (Single (Score 9) "yay ")
+                        (Single (Score 14) "haskell!")
+        scoreLine "yay " +++ scoreLine "haskell!" `shouldBe` expected

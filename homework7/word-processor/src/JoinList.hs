@@ -10,6 +10,7 @@ module JoinList
     , dropJ
     , ValidJoinList (ValidJoinList)
     , takeJ
+    , scoreLine
 --    , tag
     ) where
 -- For testing JoinList arbitrary
@@ -17,7 +18,7 @@ import Test.QuickCheck.Arbitrary
 import Test.QuickCheck.Gen
 
 import Sized
---import Data.Maybe (isNothing)
+import Scrabble
 
 -- Exercise 1
 data JoinList m a = Empty
@@ -129,3 +130,7 @@ takeJ n (Append m jll jlr)
     jll_size  = jlSize jll
     jl_size   = (getSize $ size m)
 takeJ _ _ = Empty
+
+-- Exercise 3
+scoreLine :: String -> JoinList Score String
+scoreLine s = Single (scoreString s) s
