@@ -16,6 +16,8 @@ import JoinList (
                 , ValidJoinList (ValidJoinList)
                 , takeJ
                 , scoreLine
+                , jlToString
+                , jlFromString
                 )
 
 main :: IO ()
@@ -81,3 +83,37 @@ spec =
                         (Single (Score 9) "yay ")
                         (Single (Score 14) "haskell!")
         scoreLine "yay " +++ scoreLine "haskell!" `shouldBe` expected
+    context "Buffer - exercise 4" $ do
+      let jl = Append (Score 2, Size 2) (Single (Score 1, Size 1) "a") (Single (Score 1, Size 1) "a")
+      it "To string" $ do
+        jlToString jl `shouldBe` "a\na"
+      it "To string #2" $ do
+        jlToString (jl +++ jl) `shouldBe` "a\na\na\na"
+      it "From string" $ do
+        jlFromString "a\na" `shouldBe` jl
+      it "From string #2" $ do
+        pendingWith "The order of JoinList creation is different between jlFromString and +++"
+        jlFromString "a\na\na\na\n" `shouldBe` jl +++ jl
+      it "From string of \"\\n\"" $ do
+        jlFromString "\n" `shouldBe` Single (Score 0, Size 1) "" +++ Single (Score 0, Size 1) ""
+      it "From string of \"\"" $ do
+        jlFromString "" `shouldBe` Single (Score 0, Size 1) ""
+      it "To string of Single \"\"" $ do
+        jlToString (Single (Score 0, Size 1) "") `shouldBe` ""
+      it "To string of Single \"a\"" $ do
+        jlToString (Single (Score 1, Size 1) "a") `shouldBe` "a"
+      it "To string of Single \"\\na\"" $ do
+        jlToString (Single (Score 1, Size 1) "\na") `shouldBe` "\na"
+      it "From string of \"\\na\\n\"" $ do
+        let jl_n' = Single (Score 0, Size 1) ""
+        let jl_a' = Single (Score 1, Size 1) "a"
+        jlFromString "\na\n" `shouldBe` jl_n' +++ (jl_a' +++ jl_n')
+      it "toString == fromString" $ do
+        pendingWith "jlToString has values of ValidJoinList which \
+          \have overlapping string results."
+      --prop "toString == fromString" $ \(ValidJoinList jl') ->
+      --  let s = jlToString (jl' :: JoinList (Score, Size) String)
+      --  in (jlFromString s) `shouldBe` jl'
+      prop "toString == fromString" $ \s ->
+        let jl' = jlFromString s
+        in (jlToString jl') `shouldBe` s

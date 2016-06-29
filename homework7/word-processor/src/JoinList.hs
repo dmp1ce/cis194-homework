@@ -11,11 +11,16 @@ module JoinList
     , ValidJoinList (ValidJoinList)
     , takeJ
     , scoreLine
+    , jlToString
+    , jlFromString
+    , jlSize
+    , jlReplaceLine
 --    , tag
     ) where
 -- For testing JoinList arbitrary
 import Test.QuickCheck.Arbitrary
 import Test.QuickCheck.Gen
+import Data.List.Split (splitOn)
 
 import Sized
 import Scrabble
@@ -69,10 +74,11 @@ instance (Arbitrary a) => Arbitrary (ValidJoinList Size a) where
     result <- elements
                   [
                     (Single (Size 1) x)
-                  , (Append (addJoinListSizes jl0 jl1) jl0 jl1)
+                  , jl0 +++ jl1
                   , Empty
                   ]
     return $ result
+
 
 addJoinListSizes :: JoinList Size a -> JoinList Size a -> Size
 addJoinListSizes jl0 jl1 = Size (jlSize jl0 + jlSize jl1)
@@ -134,3 +140,40 @@ takeJ _ _ = Empty
 -- Exercise 3
 scoreLine :: String -> JoinList Score String
 scoreLine s = Single (scoreString s) s
+
+-- Exercise 4
+jlToString :: JoinList (Score, Size) String -> String
+-- It would be nice to get rid of reverse here
+--jlToString jl = reverse $ drop 1 $ reverse $ jlToString' jl where
+--jlToString (Single _ )  = ""
+jlToString (Single _ a) = a
+jlToString Empty        = []
+jlToString (Append _ jl0 jl1) = jlToString jl0 ++ "\n" ++ jlToString jl1
+
+jlFromString :: String -> JoinList (Score, Size) String
+jlFromString "" = Single (Score 0, Size 1) ""
+jlFromString s = foldr (\x acc -> Single (scoreString x, (Size 1)) x +++ acc) Empty (splitOn "\n" s)
+--  where
+--    -- Add a line break if necessary to add the one that "lines" will remove
+--    fixEnding :: String -> String
+--    -- It would be nice to get rid of reverse here.
+--    fixEnding s' = case (reverse s') of
+--      (x:_) -> if x `elem` "\n" then s' ++ "\n" else s'
+--      _ -> s'
+
+jlReplaceLine :: Int -> String -> JoinList (Score, Size) String -> JoinList (Score, Size) String
+jlReplaceLine _ _ b = b
+
+-- QuickCheck arbitrary instance
+instance Arbitrary (ValidJoinList (Score, Size) String) where
+  arbitrary = ValidJoinList <$> do
+    x <- arbitrary
+    ValidJoinList jl0 <- arbitrary
+    ValidJoinList jl1 <- arbitrary
+    result <- elements
+                  [
+                    (Single (scoreString x, Size 1) x)
+                  , jl0 +++ jl1
+                  , Empty
+                  ]
+    return $ result
