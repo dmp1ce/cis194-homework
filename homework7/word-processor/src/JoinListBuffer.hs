@@ -11,15 +11,13 @@ import JoinList
   , JoinList
   , jlReplaceLine
   , jlSize
+  , jlScore
   )
 
 instance Buffer (JoinList (Score, Size) String) where
-  toString     = jlToString
-  fromString   = jlFromString
-  line n b     = indexJ n b
+  toString          = jlToString
+  fromString        = jlFromString
+  line n b          = indexJ n b
   replaceLine n l b = jlReplaceLine n l b
---unlines . uncurry replaceLine' . splitAt n . lines $ b
---      where replaceLine' pre [] = pre
---            replaceLine' pre (_:ls) = pre ++ l:ls
-  numLines     = jlSize
-  value _      = (0::Int)
+  numLines          = jlSize
+  value             = jlScore

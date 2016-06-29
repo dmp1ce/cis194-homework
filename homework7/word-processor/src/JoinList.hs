@@ -15,6 +15,7 @@ module JoinList
     , jlFromString
     , jlSize
     , jlReplaceLine
+    , jlScore
 --    , tag
     ) where
 -- For testing JoinList arbitrary
@@ -80,19 +81,17 @@ instance (Arbitrary a) => Arbitrary (ValidJoinList Size a) where
     return $ result
 
 
-addJoinListSizes :: JoinList Size a -> JoinList Size a -> Size
-addJoinListSizes jl0 jl1 = Size (jlSize jl0 + jlSize jl1)
+--addJoinListSizes :: JoinList Size a -> JoinList Size a -> Size
+--addJoinListSizes jl0 jl1 = Size (jlSize jl0 + jlSize jl1)
 
 jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
 jlSize = getSize . size . tag
---isValidJoinList :: (Sized s, Monoid s) => JoinList s a -> Bool
---isValidJoinList jl
---    | jl_size > 0 = True
---    | otherwise   = False
---    where
---      jlSize :: (Sized b, Monoid b) => JoinList b a -> Int
---      jlSize = getSize . size . tag
---      jl_size = jlSize jl
+
+jlScore :: JoinList (Score, Size) a -> Int
+jlScore = getScore' . tag
+  where
+    getScore' :: (Score, Size) -> Int
+    getScore' (Score i, _) = i
 
 indexJ :: (Sized b, Monoid b) => Int -> JoinList b a -> Maybe a
 indexJ 0 (Single _ a) = Just a
@@ -162,7 +161,9 @@ jlFromString s = foldr (\x acc -> Single (scoreString x, (Size 1)) x +++ acc) Em
 --      _ -> s'
 
 jlReplaceLine :: Int -> String -> JoinList (Score, Size) String -> JoinList (Score, Size) String
-jlReplaceLine _ _ b = b
+jlReplaceLine n s b = takeJ n b +++
+                      Single (scoreString s, Size 1) s +++
+                      dropJ (n+1) b
 
 -- QuickCheck arbitrary instance
 instance Arbitrary (ValidJoinList (Score, Size) String) where

@@ -18,6 +18,7 @@ import JoinList (
                 , scoreLine
                 , jlToString
                 , jlFromString
+                , jlReplaceLine
                 )
 
 main :: IO ()
@@ -83,7 +84,7 @@ spec =
                         (Single (Score 9) "yay ")
                         (Single (Score 14) "haskell!")
         scoreLine "yay " +++ scoreLine "haskell!" `shouldBe` expected
-    context "Buffer - exercise 4" $ do
+    context "JoinListBuffer - exercise 4" $ do
       let jl = Append (Score 2, Size 2) (Single (Score 1, Size 1) "a") (Single (Score 1, Size 1) "a")
       it "To string" $ do
         jlToString jl `shouldBe` "a\na"
@@ -117,3 +118,13 @@ spec =
       prop "toString == fromString" $ \s ->
         let jl' = jlFromString s
         in (jlToString jl') `shouldBe` s
+      context "jlReplaceLine" $ do
+        let jl_a = Single (Score 1, Size 1) "a"
+        let jl_b = Single (Score 3, Size 1) "b"
+        it "simple" $ do
+          jlReplaceLine 1 "b" (jl_a +++ jl_a +++ jl_a) `shouldBe`
+            (jl_a +++ jl_b +++ jl_a)
+        it "One element" $ do
+          jlReplaceLine 0 "b" jl_a `shouldBe` jl_b
+        it "No elements" $ do
+          jlReplaceLine 0 "b" Empty `shouldBe` jl_b
