@@ -7,4 +7,4 @@ module Party
 import Employee
 
 glCons :: Employee -> GuestList -> GuestList
-glCons _ gl = gl
+glCons e (GL list fun) = GL (e:list) (fun + empFun e)

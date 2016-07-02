@@ -41,6 +41,7 @@ test-suite spec
                      , Party
                      , hspec
                      , QuickCheck
+  other-modules:      PartySpec
 
 source-repository head
   type:     git
