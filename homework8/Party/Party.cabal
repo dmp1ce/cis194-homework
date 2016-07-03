@@ -41,6 +41,7 @@ test-suite spec
                      , Party
                      , hspec
                      , QuickCheck
+                     , containers
   other-modules:      PartySpec
 
 source-repository head

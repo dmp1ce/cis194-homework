@@ -50,3 +50,8 @@ data GuestList = GL [Employee] Fun
 
 instance Ord GuestList where
   compare (GL _ f1) (GL _ f2) = compare f1 f2
+
+-- For exercise 1
+instance Monoid GuestList where
+  mempty = GL [] 0
+  mappend (GL lx fx) (GL ly fy) = GL (lx++ly) (fx+fy)
