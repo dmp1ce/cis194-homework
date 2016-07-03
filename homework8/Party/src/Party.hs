@@ -5,6 +5,7 @@ module Party
     , moreFun
     , treeFold
     , nextLevel
+    , maxFun
     ) where
 
 import Data.Tree
@@ -30,8 +31,13 @@ nextLevel :: Employee -> [(GuestList, GuestList)]
   -> (GuestList, GuestList)
 nextLevel b (xs) =
   ((GL [b] (empFun b)) `mappend` (snd totalGuestLists),
-    (fst totalGuestLists))
+    (uncurry moreFun totalGuestLists))
   where
     totalGuestLists = foldr appendTuples (mempty,mempty) xs
     appendTuples = (\x acc ->
       ((fst x) `mappend` (fst acc),(snd x) `mappend` (snd acc)) )
+
+-- Exercise 4
+-- Looked up solution here: https://github.com/evansb/cis194-hw/blob/master/spring_2013/hw8/Party.hs
+maxFun :: Tree Employee -> GuestList
+maxFun = uncurry moreFun . treeFold nextLevel

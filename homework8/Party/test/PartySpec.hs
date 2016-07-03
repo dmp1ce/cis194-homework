@@ -5,7 +5,7 @@ import Test.Hspec
 
 import Employee
 import Data.Tree
-import Party (glCons, treeFold, nextLevel)
+import Party (glCons, treeFold, nextLevel, maxFun)
 
 main :: IO ()
 main = hspec spec
@@ -52,6 +52,14 @@ spec =
       it "Two subtrees" $ do
         nextLevel bob [(glSub, glSubNoBoss),(glSub2,glSub2NoBoss)] `shouldBe`
           (GL [bob,mell,donna,lenna] 9, GL [dave,will,marc] 13)
+
+    context "maxFun" $ do
+      let treeOfOne = Node (Emp "Dave" 3) []
+      it "Tree of one" $ do
+        maxFun treeOfOne `shouldBe` GL [(Emp "Dave" 3)] 3
+      let treeOfTwo = Node (Emp "Mell" 2) [treeOfOne]
+      it "Tree of two" $ do
+        maxFun treeOfTwo `shouldBe` GL [(Emp "Dave" 3)] 3
 
 --      prop "ourAdd is commutative" $ \x y ->
 --        ourAdd x y `shouldBe` ourAdd y x
