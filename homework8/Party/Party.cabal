@@ -30,6 +30,7 @@ executable Party
   main-is:             Main.hs
   build-depends:       base
                      , Party
+                      , containers
 
 test-suite spec
   default-language:    Haskell2010

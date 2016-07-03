@@ -55,3 +55,7 @@ instance Ord GuestList where
 instance Monoid GuestList where
   mempty = GL [] 0
   mappend (GL lx fx) (GL ly fy) = GL (lx++ly) (fx+fy)
+
+-- Exercise 5 (for sorting employees)
+instance Ord Employee where
+  compare (Emp n1 _) (Emp n2 _) = compare n1 n2

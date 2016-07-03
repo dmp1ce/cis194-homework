@@ -1,8 +1,11 @@
 module Main where
 
---import Party (ourAdd)
-
-import Text.Printf (printf)
+import Data.Tree
+import Employee
+import Party
 
 main :: IO ()
-main = printf "Nothing yet"
+main = do
+  s <- readFile "data/company.txt"
+  let empTree = (read s :: Tree Employee)
+  putStrLn $ outputGuestList $ maxFun empTree

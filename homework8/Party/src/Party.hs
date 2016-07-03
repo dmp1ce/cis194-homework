@@ -6,9 +6,11 @@ module Party
     , treeFold
     , nextLevel
     , maxFun
+    , outputGuestList
     ) where
 
 import Data.Tree
+import Data.List
 import Employee
 
 -- Exercise 1
@@ -41,3 +43,10 @@ nextLevel b (xs) =
 -- Looked up solution here: https://github.com/evansb/cis194-hw/blob/master/spring_2013/hw8/Party.hs
 maxFun :: Tree Employee -> GuestList
 maxFun = uncurry moreFun . treeFold nextLevel
+
+-- Exercise 5
+outputGuestList :: GuestList -> String
+outputGuestList (GL list f) = show f ++ "\n" ++ (empListToNames . sort) list
+
+empListToNames :: [Employee] -> String
+empListToNames = foldr (\x acc -> empName x ++ "\n" ++ acc) ""
