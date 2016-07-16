@@ -44,6 +44,19 @@ invade (Battlefield a d)
   | a < 2 || d < 1  = return $ Battlefield a d
   | otherwise       = battle (Battlefield a d) >>= invade
 
+successProb :: Battlefield -> Rand StdGen Double
+successProb bf = do
+  invadeResults <- flipType $ take 1000 $ repeat $ invade bf
+  return $ calcProb invadeResults
+
+calcProb :: [Battlefield] -> Double
+calcProb bfs =
+  (foldr (\(Battlefield _ d) acc -> if d==0 then acc+1 else acc) 0 bfs) / 1000
+
+-- Yeah, no. I'll save this for a rainy day.
+exactSuccessProb :: Battlefield -> Double
+exactSuccessProb = undefined
+
 -- A list of rolls
 dieRolls :: Int -> Rand StdGen [DieValue]
 dieRolls i = flipType $ take i $ repeat die
