@@ -39,6 +39,11 @@ battle (Battlefield a d)  = do
   let (Sum a_losses, Sum d_losses) = losses a_rolls d_rolls
   return $ Battlefield (a - a_losses) (d - d_losses)
 
+invade :: Battlefield -> Rand StdGen Battlefield
+invade (Battlefield a d)
+  | a < 2 || d < 1  = return $ Battlefield a d
+  | otherwise       = battle (Battlefield a d) >>= invade
+
 -- A list of rolls
 dieRolls :: Int -> Rand StdGen [DieValue]
 dieRolls i = flipType $ take i $ repeat die
